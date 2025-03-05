@@ -5,20 +5,46 @@
   <title>PostMessage Demo - Child</title>
 </head>
 <body>
-  <h1>Child Frame (child.local)</h1>
-  <p id="childStatus">Waiting for command...</p>
+  <h1>Child Frame (child.local:8000)</h1>
+  <button id="resetButton">Reset LocalStorage</button>
+  <p id="childStatus">
+    Waiting for command... LocalStorage: <span id="childLocalStorageValue">(none)</span>
+  </p>
 
   <script>
+    // Helper to update the display of child's localStorage value.
+    function updateLocalStorageDisplay() {
+      const value = localStorage.getItem("childTimestamp") || "(none)";
+      document.getElementById("childLocalStorageValue").textContent = value;
+    }
+
+    // Reset child's localStorage when the reset button is clicked.
+    document.getElementById("resetButton").addEventListener("click", function() {
+      localStorage.removeItem("childTimestamp");
+      updateLocalStorageDisplay();
+      document.getElementById("childStatus").textContent = "LocalStorage reset. Waiting for command...";
+    });
+
+    // Listen for messages from the parent.
     window.addEventListener("message", function(event) {
+      // Verify the origin for security.
       if (event.origin === "http://parent.local:8000") {
         if (event.data === "start") {
-          document.getElementById("childStatus").textContent = "Sending message to parent...";
-          window.parent.postMessage("Hello from child!", "http://parent.local:8000");
+          const timestamp = new Date().toISOString();
+          localStorage.setItem("childTimestamp", "Received 'start' at " + timestamp);
+          updateLocalStorageDisplay();
+          document.getElementById("childStatus").textContent =
+            "Received 'start'. LocalStorage updated with timestamp: " + localStorage.getItem("childTimestamp");
+          // Send a reply back to the parent including the child's localStorage value.
+          window.parent.postMessage("Child localStorage: " + localStorage.getItem("childTimestamp"), "http://parent.local:8000");
         }
       } else {
         console.log("Ignored message from unknown origin:", event.origin);
       }
     }, false);
+
+    // Initial update of the display on page load.
+    updateLocalStorageDisplay();
   </script>
 </body>
 </html>

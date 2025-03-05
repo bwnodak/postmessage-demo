@@ -46,6 +46,6 @@ Here are a couple of screenshots from the demo:
 
 1. *Start the Demo*: Click the "Start Demo" button on the parent page. This sends a "start" message to the child frame using postMessage.
 
-2. *Child Receives the Message*: The child page listens for the "start" message, updates its status text, and sends back a reply ("Hello from child!").
+2. *Child Receives the Message*: The child page listens for the "start" message with a timestamp, updates its status text, and sends back a reply timestamp.
 
 3. *Parent Receives the Reply*: The parent page listens for messages from the child, verifies the origin, and updates its status text upon receiving the message.

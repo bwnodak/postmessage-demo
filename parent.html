@@ -5,25 +5,58 @@
   <title>PostMessage Demo - Parent</title>
 </head>
 <body>
-  <h1>Parent Window (parent.local)</h1>
+  <h1>Parent Window (parent.local:8000)</h1>
   <button id="startButton">Start Demo</button>
-  <p id="status">Waiting for message...</p>
+  <button id="resetButton">Reset LocalStorage</button>
+  <p id="status">
+    Waiting for message... LocalStorage: <span id="localStorageValue">(none)</span>
+  </p>
   
+  <!-- Iframe hosted on a different domain -->
   <iframe id="childFrame" src="http://child.local:8000/child.html" width="600" height="400"></iframe>
 
   <script>
+    // Helper to update the display of parent's localStorage value.
+    function updateLocalStorageDisplay() {
+      const value = localStorage.getItem("parentTimestamp") || "(none)";
+      document.getElementById("localStorageValue").textContent = value;
+    }
+    
+    // Reset parent's localStorage when the reset button is clicked.
+    document.getElementById("resetButton").addEventListener("click", function() {
+      localStorage.removeItem("parentTimestamp");
+      updateLocalStorageDisplay();
+      document.getElementById("status").textContent = "LocalStorage reset. Waiting for message...";
+    });
+
+    // Listen for messages from the child iframe.
     window.addEventListener("message", function(event) {
+      // Verify the origin for security.
       if (event.origin === "http://child.local:8000") {
-        document.getElementById("status").textContent = "Message received: " + event.data;
+        // Update parent's localStorage with a timestamp.
+        const timestamp = new Date().toISOString();
+        localStorage.setItem("parentTimestamp", "Received at " + timestamp);
+        updateLocalStorageDisplay();
+        // Update the on-screen message with both the received data and parent's localStorage.
+        document.getElementById("status").textContent =
+          "Message from child: " + event.data +
+          " | Parent localStorage: " + localStorage.getItem("parentTimestamp");
       } else {
         console.log("Ignored message from unknown origin:", event.origin);
       }
     }, false);
 
+    // When the Start Demo button is clicked, update parent's localStorage and send a "start" message.
     document.getElementById("startButton").addEventListener("click", function() {
+      const timestamp = new Date().toISOString();
+      localStorage.setItem("parentTimestamp", "Started at " + timestamp);
+      updateLocalStorageDisplay();
       var iframe = document.getElementById("childFrame");
       iframe.contentWindow.postMessage("start", "http://child.local:8000");
     });
+
+    // Initial update of the display on page load.
+    updateLocalStorageDisplay();
   </script>
 </body>
 </html>
