@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PostMessage Demo - Child</title>
+</head>
+<body>
+  <h1>Child Frame (child.local)</h1>
+  <p id="childStatus">Waiting for command...</p>
+
+  <script>
+    window.addEventListener("message", function(event) {
+      if (event.origin === "http://parent.local:8000") {
+        if (event.data === "start") {
+          document.getElementById("childStatus").textContent = "Sending message to parent...";
+          window.parent.postMessage("Hello from child!", "http://parent.local:8000");
+        }
+      } else {
+        console.log("Ignored message from unknown origin:", event.origin);
+      }
+    }, false);
+  </script>
+</body>
+</html>

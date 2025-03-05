@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PostMessage Demo - Parent</title>
+</head>
+<body>
+  <h1>Parent Window (parent.local)</h1>
+  <button id="startButton">Start Demo</button>
+  <p id="status">Waiting for message...</p>
+  
+  <iframe id="childFrame" src="http://child.local:8000/child.html" width="600" height="400"></iframe>
+
+  <script>
+    window.addEventListener("message", function(event) {
+      if (event.origin === "http://child.local:8000") {
+        document.getElementById("status").textContent = "Message received: " + event.data;
+      } else {
+        console.log("Ignored message from unknown origin:", event.origin);
+      }
+    }, false);
+
+    document.getElementById("startButton").addEventListener("click", function() {
+      var iframe = document.getElementById("childFrame");
+      iframe.contentWindow.postMessage("start", "http://child.local:8000");
+    });
+  </script>
+</body>
+</html>
